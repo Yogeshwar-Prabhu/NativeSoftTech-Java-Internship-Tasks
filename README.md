@@ -23,6 +23,6 @@ Each project is built using **HTML, Tailwind CSS, and JavaScript**, focusing on 
 > 💻 All projects are fully responsive, lightweight, and interactive.
 
 🎥 Demo videos and screenshots included in each task folder.  
-🙏 Special thanks to **@NativeSoftTech** for this internship opportunity!
+🥳 Special thanks to **NativeSoftTech** for this internship opportunity!
 
 #NativeSoftTech #JavaProgramming #WebDevelopment #Internship #FrontendProjects
