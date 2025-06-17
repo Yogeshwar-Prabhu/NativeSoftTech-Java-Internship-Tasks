@@ -1,0 +1,4 @@
+TailwindCSS (CDN)
+JavaScript (Vanilla)
+Chart.js
+HTML5
