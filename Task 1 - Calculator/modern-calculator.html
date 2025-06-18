@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Modern Calculator</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #000;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    .display {
+      text-align: right;
+      font-size: 3rem;
+      padding: 1.5rem;
+      background-color: #000;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      padding: 1rem;
+      background-color: #000;
+      flex: 1;
+    }
+
+    .btn {
+      padding: 1.2rem;
+      font-size: 1.5rem;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      color: white;
+    }
+
+    .btn.gray {
+      background-color: #a5a5a5;
+      color: black;
+    }
+
+    .btn.dark {
+      background-color: #333;
+    }
+
+    .btn.orange {
+      background-color: #ff9f0a;
+    }
+
+    .tab-bar {
+      background: #111;
+      padding: 0.7rem;
+      display: flex;
+      justify-content: space-around;
+      color: white;
+      font-size: 0.9rem;
+      border-top: 1px solid #222;
+    }
+
+    .tab-bar div {
+      text-align: center;
+      flex: 1;
+    }
+
+    .tab-bar .active {
+      color: #0af;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="display" id="display">0</div>
+
+  <div class="buttons">
+    <button class="btn gray">M+</button>
+    <button class="btn gray">M-</button>
+    <button class="btn gray">MR</button>
+    <button class="btn gray">MC</button>
+
+    <button class="btn dark">(</button>
+    <button class="btn dark">)</button>
+    <button class="btn dark">←</button>
+    <button class="btn gray">AC</button>
+
+    <button class="btn dark">7</button>
+    <button class="btn dark">8</button>
+    <button class="btn dark">9</button>
+    <button class="btn orange">÷</button>
+
+    <button class="btn dark">4</button>
+    <button class="btn dark">5</button>
+    <button class="btn dark">6</button>
+    <button class="btn orange">×</button>
+
+    <button class="btn dark">1</button>
+    <button class="btn dark">2</button>
+    <button class="btn dark">3</button>
+    <button class="btn orange">−</button>
+
+    <button class="btn dark">0</button>
+    <button class="btn dark">00</button>
+    <button class="btn dark">.</button>
+    <button class="btn orange">+</button>
+
+    <button class="btn dark">000</button>
+    <button class="btn gray">Ans</button>
+    <button class="btn gray">%</button>
+    <button class="btn orange">=</button>
+  </div>
+
+  <div class="tab-bar">
+<div class="active" class="font-bold text-blue-1100 text-lg underline">Calculator</div>
+  </div>
+
+  <script>
+    const display = document.getElementById('display');
+    let current = '';
+    let answer = 0;
+
+    const buttons = document.querySelectorAll('.btn');
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        let val = btn.innerText;
+
+        if (val === 'AC') {
+          current = '';
+          display.innerText = '0';
+        } else if (val === '←') {
+          current = current.slice(0, -1);
+          display.innerText = current || '0';
+        } else if (val === '=') {
+          try {
+            answer = eval(current.replace('×', '*').replace('÷', '/').replace('−', '-'));
+            display.innerText = answer;
+            current = answer.toString();
+          } catch {
+            display.innerText = 'Error';
+            current = '';
+          }
+        } else if (val === 'Ans') {
+          current += answer;
+          display.innerText = current;
+        } else {
+          current += val;
+          display.innerText = current;
+        }
+      });
+    });
+  </script>
+</body>
+</html>
