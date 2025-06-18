@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Student Management System</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: 'class' };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-black dark:text-white min-h-screen font-sans">
+
+  <div class="flex justify-between items-center p-4">
+  <h1 class="text-3xl font-bold text-purple-700 dark:text-purple-300 text-center w-full mt-6">Student Management System</h1>
+  <button onclick="toggleDarkMode()" class="whitespace-nowrap px-4 py-1 border border-purple-600 dark:border-purple-300 text-purple-600 dark:text-purple-300 rounded-full text-sm">
+  🌙 Dark Mode
+</button>
+
+  </div>
+
+  <div class="max-w-6xl mx-auto p-4 space-y-6">
+
+    <!-- Filter -->
+    <div class="flex justify-between">
+      <div class="flex gap-4">
+        <select id="filterClass" onchange="updateUI()" class="border p-2 rounded dark:bg-gray-800 dark:text-white dark:border-gray-700">
+          <option value="all">All Classes</option>
+          <option value="A">Class A</option>
+          <option value="B">Class B</option>
+          <option value="C">Class C</option>
+        </select>
+        <button onclick="resetAll()" class="bg-red-600 text-white px-4 py-2 rounded">🔁 Reset All</button>
+      </div>
+      <button onclick="showForm()" class="bg-purple-600 text-white px-4 py-2 rounded flex items-center gap-2 font-semibold">
+  <span class="text-lg">＋</span> Add Student
+</button>
+
+    </div>
+
+    <!-- Cards -->
+    <div class="grid grid-cols-3 gap-4 text-center">
+      <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow">
+        <p class="text-sm text-gray-500 dark:text-gray-300">Present</p>
+        <h3 class="text-xl font-bold text-green-500" id="presentCount">0</h3>
+      </div>
+      <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow">
+        <p class="text-sm text-gray-500 dark:text-gray-300">Absent</p>
+        <h3 class="text-xl font-bold text-red-500" id="absentCount">0</h3>
+      </div>
+      <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow">
+        <p class="text-sm text-gray-500 dark:text-gray-300">Late</p>
+        <h3 class="text-xl font-bold text-yellow-400" id="lateCount">0</h3>
+      </div>
+    </div>
+
+    <!-- Student List -->
+    <div id="studentList" class="space-y-4">
+      <p class="text-gray-400 dark:text-gray-500">No students yet.</p>
+    </div>
+
+    <!-- Chart -->
+    <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow">
+      <h2 class="text-lg font-semibold text-purple-700 dark:text-purple-300 mb-2">Attendance Chart</h2>
+      <canvas id="attendanceChart" height="150"></canvas>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div id="studentModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white dark:bg-gray-800 p-6 rounded-lg w-96">
+      <h3 class="text-xl font-semibold text-purple-700 dark:text-purple-300 mb-4" id="modalTitle">Add Student</h3>
+      <input id="studentName" type="text" placeholder="Student Name" class="w-full border p-2 mb-3 rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+      <select id="studentClass" class="w-full border p-2 mb-4 rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+        <option value="A">Class A</option>
+        <option value="B">Class B</option>
+        <option value="C">Class C</option>
+      </select>
+      <div class="flex justify-end gap-2">
+        <button onclick="saveStudent()" class="bg-purple-600 text-white px-4 py-2 rounded">Save</button>
+        <button onclick="hideForm()" class="border border-purple-600 text-purple-600 dark:border-purple-300 dark:text-purple-300 px-4 py-2 rounded">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+  let students = JSON.parse(localStorage.getItem("students")) || [];
+  let chart;
+  let editingIndex = -1;
+
+  function toggleDarkMode() {
+    document.documentElement.classList.toggle("dark");
+    localStorage.setItem("darkModeStudent", document.documentElement.classList.contains("dark"));
+  }
+
+if (localStorage.getItem("darkModeStudent") === "true") {
+  document.documentElement.classList.add("dark");
+} else {
+  document.documentElement.classList.remove("dark");
+}
+
+
+  function showForm(index = -1) {
+    editingIndex = index;
+    document.getElementById("modalTitle").textContent = index >= 0 ? "Edit Student" : "Add Student";
+    if (index >= 0) {
+      document.getElementById("studentName").value = students[index].name;
+      document.getElementById("studentClass").value = students[index].class;
+    } else {
+      document.getElementById("studentName").value = "";
+      document.getElementById("studentClass").value = "A";
+    }
+    document.getElementById("studentModal").classList.remove("hidden");
+    document.getElementById("studentModal").classList.add("flex");
+  }
+
+  function hideForm() {
+    editingIndex = -1;
+    document.getElementById("studentModal").classList.add("hidden");
+    document.getElementById("studentModal").classList.remove("flex");
+  }
+
+  function saveStudent() {
+    const name = document.getElementById("studentName").value.trim();
+    const classVal = document.getElementById("studentClass").value;
+    if (!name) return alert("Enter student name");
+
+    if (editingIndex >= 0) {
+      students[editingIndex].name = name;
+      students[editingIndex].class = classVal;
+    } else {
+      students.push({ name, class: classVal, status: "present" });
+    }
+    localStorage.setItem("students", JSON.stringify(students));
+    hideForm();
+    updateUI();
+  }
+
+  function deleteStudent(index) {
+    if (confirm("Delete student?")) {
+      students.splice(index, 1);
+      localStorage.setItem("students", JSON.stringify(students));
+      updateUI();
+    }
+  }
+
+  function changeStatus(index, status) {
+    students[index].status = status;
+    localStorage.setItem("students", JSON.stringify(students));
+    updateUI();
+  }
+
+  function resetAll() {
+    if (confirm("Reset all students?")) {
+      students = [];
+      localStorage.removeItem("students");
+      updateUI();
+    }
+  }
+
+  function updateUI() {
+    const filter = document.getElementById("filterClass").value;
+    const list = document.getElementById("studentList");
+    let present = 0, absent = 0, late = 0;
+    list.innerHTML = "";
+
+    const filtered = filter === "all" ? students : students.filter(s => s.class === filter);
+
+    if (filtered.length === 0) {
+      list.innerHTML = '<p class="text-gray-400 dark:text-gray-500">No students yet.</p>';
+    } else {
+      filtered.forEach((student, i) => {
+        if (student.status === "present") present++;
+        if (student.status === "absent") absent++;
+        if (student.status === "late") late++;
+
+        list.innerHTML += `
+          <div class="flex justify-between items-center bg-white dark:bg-gray-800 p-3 rounded shadow">
+            <div>
+              <div class="font-semibold">${student.name}</div>
+              <div class="text-sm text-gray-400">Class ${student.class}</div>
+              <select onchange="changeStatus(${students.indexOf(student)}, this.value)" class="mt-1 border p-1 rounded text-sm dark:bg-gray-700 dark:border-gray-600">
+                <option value="present" ${student.status === "present" ? "selected" : ""}>Present</option>
+                <option value="absent" ${student.status === "absent" ? "selected" : ""}>Absent</option>
+                <option value="late" ${student.status === "late" ? "selected" : ""}>Late</option>
+              </select>
+            </div>
+            <div class="space-x-2">
+              <button onclick="showForm(${students.indexOf(student)})" class="px-2 py-1 bg-yellow-400 text-white rounded text-sm">✏️</button>
+              <button onclick="deleteStudent(${students.indexOf(student)})" class="px-2 py-1 bg-red-500 text-white rounded text-sm">🗑️</button>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    document.getElementById("presentCount").textContent = present;
+    document.getElementById("absentCount").textContent = absent;
+    document.getElementById("lateCount").textContent = late;
+
+    updateChart(present, absent, late);
+  }
+
+  function updateChart(p, a, l) {
+    const ctx = document.getElementById("attendanceChart").getContext("2d");
+    if (chart) chart.destroy();
+    chart = new Chart(ctx, {
+      type: "doughnut",
+      data: {
+        labels: ["Present", "Absent", "Late"],
+        datasets: [{
+          data: [p, a, l],
+          backgroundColor: ["#4caf50", "#f44336", "#ff9800"]
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: "bottom" }
+        }
+      }
+    });
+  }
+
+  // Initial load
+  updateUI();
+</script>
+
+</body>
+</html>
