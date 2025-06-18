@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Banking Application</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    tailwind.config = { darkMode: 'class' };
+  </script>
+</head>
+<body class="bg-gradient-to-br from-purple-900 to-indigo-800 min-h-screen flex items-center justify-center p-6 font-sans text-black dark:text-white dark:bg-gradient-to-br dark:from-gray-900 dark:to-gray-800">
+
+  <div class="max-w-md w-full bg-white dark:bg-gray-900 dark:text-white rounded-3xl shadow-lg p-8 scale-105">
+    <div class="flex justify-between items-center mb-5">
+      <div class="font-semibold text-2xl text-purple-700 dark:text-purple-400">My Wallet</div>
+      <div class="flex gap-2">
+        <button onclick="toggleDark()" class="px-3 py-1 rounded-full text-sm border border-purple-700 text-purple-700 dark:text-purple-400 dark:border-purple-400">🌙Dark Mode</button>
+        <button onclick="toggleForm()" class="bg-purple-600 text-white px-4 py-2 rounded-full text-sm">+ Add</button>
+      </div>
+    </div>
+
+    <div class="bg-purple-100 dark:bg-purple-800 rounded-2xl p-5 mb-6">
+      <div class="text-md text-purple-700 dark:text-purple-100 font-bold">Total Balance</div>
+      <div class="text-3xl font-extrabold mt-1" id="balance">₹0.00</div>
+    </div>
+
+    <div class="mb-4">
+      <canvas id="balanceChart" height="150"></canvas>
+    </div>
+
+    <div class="flex justify-between mb-4">
+      <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200">Transactions</h3>
+      <button onclick="resetAll()" class="text-sm px-3 py-1 bg-red-600 text-white rounded-full">🔁 Reset</button>
+    </div>
+
+    <div class="space-y-4 text-base" id="transactionList">
+      <p class="text-gray-400 dark:text-gray-500">No transactions yet.</p>
+    </div>
+  </div>
+
+  <!-- Add/Edit Modal -->
+  <div id="formModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white dark:bg-gray-900 dark:text-white rounded-xl p-6 w-96">
+      <h2 class="text-xl font-semibold mb-4 text-purple-700 dark:text-purple-300" id="formTitle">Add Transaction</h2>
+      <input type="text" id="title" placeholder="Title" class="w-full border p-3 mb-3 rounded text-base dark:bg-gray-800 dark:border-gray-600"/>
+      <input type="number" id="amount" placeholder="Amount" class="w-full border p-3 mb-3 rounded text-base dark:bg-gray-800 dark:border-gray-600"/>
+      <select id="type" class="w-full border p-3 mb-4 rounded text-base dark:bg-gray-800 dark:border-gray-600">
+        <option value="deposit">Deposit</option>
+        <option value="expense">Expense</option>
+      </select>
+      <div class="flex justify-between">
+        <button onclick="saveTransaction()" class="bg-purple-600 text-white px-4 py-2 rounded">Save</button>
+        <button onclick="toggleForm()" class="border border-purple-600 px-4 py-2 rounded">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Script -->
+  <script>
+    let transactions = [];
+    let chart;
+    let editingIndex = -1;
+
+    function toggleForm() {
+      document.getElementById("formModal").classList.toggle("hidden");
+      document.getElementById("formModal").classList.toggle("flex");
+    }
+
+    function resetForm() {
+      editingIndex = -1;
+      document.getElementById("formTitle").textContent = "Add Transaction";
+      document.getElementById("title").value = "";
+      document.getElementById("amount").value = "";
+      document.getElementById("type").value = "deposit";
+    }
+
+    function toggleDark() {
+      document.documentElement.classList.toggle("dark");
+      localStorage.setItem("darkModeBanking", document.documentElement.classList.contains("dark"));
+    }
+
+    if (localStorage.getItem("darkModeBanking") === "true") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+
+    function saveTransaction() {
+      const title = document.getElementById("title").value.trim();
+      const amount = parseFloat(document.getElementById("amount").value);
+      const type = document.getElementById("type").value;
+
+      if (!title || isNaN(amount)) {
+        alert("Enter valid details");
+        return;
+      }
+
+      const tx = { title, amount, type };
+      if (editingIndex >= 0) {
+        transactions[editingIndex] = tx;
+      } else {
+        transactions.push(tx);
+      }
+
+      toggleForm();
+      resetForm();
+      updateUI();
+    }
+
+    function editTransaction(index) {
+      editingIndex = index;
+      const tx = transactions[index];
+      document.getElementById("formTitle").textContent = "Edit Transaction";
+      document.getElementById("title").value = tx.title;
+      document.getElementById("amount").value = tx.amount;
+      document.getElementById("type").value = tx.type;
+      toggleForm();
+    }
+
+    function deleteTransaction(index) {
+      if (confirm("Delete this transaction?")) {
+        transactions.splice(index, 1);
+        updateUI();
+      }
+    }
+
+    function resetAll() {
+      if (confirm("Reset all transactions?")) {
+        transactions = [];
+        updateUI();
+      }
+    }
+
+    function updateUI() {
+      const list = document.getElementById("transactionList");
+      list.innerHTML = "";
+
+      let balance = 0, deposit = 0, expense = 0;
+
+      if (transactions.length === 0) {
+        list.innerHTML = `<p class="text-gray-400 dark:text-gray-500">No transactions yet.</p>`;
+        document.getElementById("balance").innerText = "₹0.00";
+        if (chart) chart.destroy();
+        return;
+      }
+
+      transactions.forEach((tx, i) => {
+        const sign = tx.type === "deposit" ? "+" : "-";
+        const color = tx.type === "deposit" ? "text-green-500" : "text-red-500";
+        const amt = sign + "₹" + tx.amount.toFixed(2);
+        balance += tx.type === "deposit" ? tx.amount : -tx.amount;
+        tx.type === "deposit" ? deposit += tx.amount : expense += tx.amount;
+
+        list.innerHTML += `
+          <div class="flex justify-between items-center gap-4">
+            <div class="flex-1">
+              <div>${tx.title}</div>
+              <div class="${color} font-bold">${amt}</div>
+            </div>
+            <div class="flex gap-2 text-sm">
+              <button onclick="editTransaction(${i})" class="px-2 py-1 bg-yellow-400 text-white rounded">✏️</button>
+              <button onclick="deleteTransaction(${i})" class="px-2 py-1 bg-red-500 text-white rounded">🗑️</button>
+            </div>
+          </div>
+        `;
+      });
+
+      document.getElementById("balance").innerText = "₹" + balance.toFixed(2);
+      updateChart(deposit, expense);
+    }
+
+    function updateChart(deposit, expense) {
+      const ctx = document.getElementById("balanceChart").getContext("2d");
+      if (chart) chart.destroy();
+      chart = new Chart(ctx, {
+        type: "doughnut",
+        data: {
+          labels: ["Deposits", "Expenses"],
+          datasets: [{ data: [deposit, expense], backgroundColor: ["#4caf50", "#f44336"] }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { position: "bottom" } }
+        }
+      });
+    }
+  </script>
+</body>
+</html>
