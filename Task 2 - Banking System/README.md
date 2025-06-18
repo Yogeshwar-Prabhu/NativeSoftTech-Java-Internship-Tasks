@@ -2,7 +2,7 @@
 
 A responsive banking dashboard UI that allows users to manage transactions and view insights.
 
-## 🔧 Features:
+## 🛠️ Features:
 - Add, Edit, Delete, and Reset transactions
 - Real-time balance calculation
 - Pie chart with Chart.js
@@ -14,5 +14,5 @@ A responsive banking dashboard UI that allows users to manage transactions and v
 - JavaScript
 - Chart.js
 
-## 📸 Demo:
-> Screenshots and demo video included in this folder.
+## 🔗 Screenshots & Demo Video:
+📸 [View Screenshots & Demo Video](https://github.com/Yogeshwar-Prabhu/NativeSoftTech-Java-Internship-Tasks/tree/main/Task%202%20-%20Banking%20System/Screenshots%20and%20Video)
