@@ -12,5 +12,5 @@ This is a web-based calculator developed using HTML, Tailwind CSS, and JavaScrip
 - Tailwind CSS
 - Vanilla JavaScript
 
-## 🔗 Demo:
+## 🔗 Screenshots & Demo Video:
 📸 [View Screenshots & Demo Video](https://github.com/Yogeshwar-Prabhu/NativeSoftTech-Java-Internship-Tasks/tree/main/Task%201%20-%20Calculator/Screenshots%20and%20Video)
