@@ -1,8 +1,8 @@
 # NativeSoftTech Java Internship – Web Tasks
 
-This repository contains all frontend web development tasks completed during my internship at **NativeSoftTech**.
+This repository contains all Java Programming tasks completed during my internship at **NativeSoftTech**.
 
-Each project is built using **HTML, Tailwind CSS, and JavaScript**, focusing on responsiveness, clean UI, and interactivity.
+Each project is built using **HTML, Tailwind CSS, Java, and JavaScript**, focusing on responsiveness, clean UI, and interactivity.
 
 ## 🔹 Included Projects:
 
@@ -26,7 +26,7 @@ Each project is built using **HTML, Tailwind CSS, and JavaScript**, focusing on 
 > 💻 All projects are fully responsive, lightweight, and interactive.
 
 🎥 Demo videos and screenshots included in each task folder.  
-🥳 Special thanks to **@NativeSoftTech** for this internship opportunity!
+🥳 Special thanks to **NativeSoftTech** for this internship opportunity!
 
 
 ## 📲 LinkedIn Posts
